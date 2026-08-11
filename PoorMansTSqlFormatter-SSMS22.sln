@@ -1,0 +1,27 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoorMansTSqlFormatter.SSMS21.VSIX", "PoorMansTSqlFormatter.SSMS21.VSIX\PoorMansTSqlFormatter.SSMS21.VSIX.csproj", "{B7226321-7962-44D4-8A0B-D2BC26ECC200}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoorMansTSqlFormatterLib", "PoorMansTSqlFormatterLib\PoorMansTSqlFormatterLib.csproj", "{ADBDFDCA-CAB6-4569-9151-0BD42E65B400}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B7226321-7962-44D4-8A0B-D2BC26ECC200}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7226321-7962-44D4-8A0B-D2BC26ECC200}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7226321-7962-44D4-8A0B-D2BC26ECC200}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7226321-7962-44D4-8A0B-D2BC26ECC200}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADBDFDCA-CAB6-4569-9151-0BD42E65B400}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADBDFDCA-CAB6-4569-9151-0BD42E65B400}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADBDFDCA-CAB6-4569-9151-0BD42E65B400}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADBDFDCA-CAB6-4569-9151-0BD42E65B400}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

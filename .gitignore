@@ -1,0 +1,19 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userprefs
+[Tt]humbs.db
+*.DS_Store
+
+# Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug*/
+[Rr]elease*/
+*.pdb
+*.vshost.exe
+
+# Test results
+[Tt]est[Rr]esult*/
+*.trx

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!--  This is the file that defines the actual layout and type of the commands.
+        It is divided in different sections (e.g. command definition, command
+        placement, ...), with each defining a specific set of properties.
+        See the comment before each section for more details about how to
+        use it. -->
+
+  <!--  The VSCT compiler (the tool that translates this file into the binary
+        format that VisualStudio will consume) has the ability to run a preprocessor
+        on the vsct file; this preprocessor is (usually) the C++ preprocessor, so
+        it is possible to define includes and macros with the same syntax used
+        in C++ files. Using this ability of the compiler here, we include some files
+        defining some of the constants that we will use inside the file. -->
+
+  <!--This is the file that defines the IDs for all the commands exposed by VisualStudio. -->
+  <Extern href="stdidcmd.h"/>
+
+  <!--This header contains the command ids for the menus provided by the shell. -->
+  <Extern href="vsshlids.h"/>
+
+  <!--The Commands section is where commands, menus, and menu groups are defined.
+      This section uses a Guid to identify the package that provides the command defined inside it. -->
+  <Commands package="guidFormatSqlCommandPackage">
+    <!-- Inside this section we have different sub-sections: one for the menus, another
+    for the menu groups, one for the buttons (the actual commands), one for the combos
+    and the last one for the bitmaps used. Each element is identified by a command id that
+    is a unique pair of guid and numeric identifier; the guid part of the identifier is usually
+    called "command set" and is used to group different command inside a logically related
+    group; your package should define its own command set in order to avoid collisions
+    with command ids defined by other packages. -->
+
+    <!-- In this section you can define new menus (e.g. a submenu). -->
+    <!-- WICHTIG: In SSMS 22 wird ein Untermenue NUR gerendert, wenn es IN einer Group
+         platziert ist (Parent = eigene Group), nicht direkt in der Haupt-Menueleiste.
+         Das wurde empirisch verifiziert (Canary-Test). -->
+    <Menus>
+      <Menu guid="guidFormatSqlCommandPackageCmdSet" id="FormatSqlMenu" priority="0x0000" type="Menu">
+        <Parent guid="guidFormatSqlCommandPackageCmdSet" id="FormatMenuHostGroup"/>
+        <Strings>
+          <ButtonText>Poor Man's T-SQL Formatter</ButtonText>
+        </Strings>
+      </Menu>
+      <!-- Symbolleiste "Poor Man's T-SQL Formatter": dockt in der Toolbar-Zeile
+           unterhalb der Menueleiste. EXPERIMENT 1.4: klassisches Muster type="Toolbar"
+           + AlwaysCreate (wie die Shell-eigenen Toolbars in ShellCmdPlace.vsct),
+           nicht mehr ToolWindowToolbar. Der Well IDM_VS_TOOL_PROGWIN (=0x1025) ist im
+           SSMS-22-SDK-Header nicht als Name definiert, daher als Alias. Sichtbar
+           gemacht wird die Leiste via DTE im Package (CommandBars.Visible=true). -->
+      <Menu guid="guidFormatSqlCommandPackageCmdSet" id="FormatToolbarMenu" priority="0x0100" type="Toolbar">
+        <Parent guid="guidSHLMainMenuToolbarWell" id="IDM_VS_TOOL_PROGWIN"/>
+        <CommandFlag>AlwaysCreate</CommandFlag>
+        <Strings>
+          <ButtonText>Poor Man's T-SQL Formatter</ButtonText>
+        </Strings>
+      </Menu>
+    </Menus>
+
+    <!-- In this section you can define new menu groups. A menu group is a container for
+         other menus or buttons (commands); from a visual point of view you can see the
+         group as the part of a menu contained between two lines. The parent of a group
+         must be a menu. -->
+    <Groups>
+      <!-- Host-Group im Tools-Menue; darin haengt das Untermenue. -->
+      <Group guid="guidFormatSqlCommandPackageCmdSet" id="FormatMenuHostGroup" priority="0x0500">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>
+      </Group>
+      <!-- Group fuer die 3 Buttons im Untermenue. -->
+      <Group guid="guidFormatSqlCommandPackageCmdSet" id="MyMenuGroup" priority="0x0600">
+        <Parent guid="guidFormatSqlCommandPackageCmdSet" id="FormatSqlMenu"/>
+      </Group>
+      <!-- Group fuer die 3 Icon-Buttons in der Toolbar. -->
+      <Group guid="guidFormatSqlCommandPackageCmdSet" id="FormatToolbarGroup" priority="0x0000">
+        <Parent guid="guidFormatSqlCommandPackageCmdSet" id="FormatToolbarMenu"/>
+      </Group>
+    </Groups>
+
+    <!--Buttons section. -->
+    <!--This section defines the elements the user can interact with, like a menu command or a button
+        or combo box in a toolbar. -->
+    <Buttons>
+      <!--To define a menu group you have to specify its ID, the parent menu and its display priority.
+          The command is visible and enabled by default. If you need to change the visibility, status, etc, you can use
+          the CommandFlag node.
+          You can add more than one CommandFlag node e.g.:
+              <CommandFlag>DefaultInvisible</CommandFlag>
+              <CommandFlag>DynamicVisibility</CommandFlag>
+          If you do not want an image next to your command, remove the Icon node /> -->
+      <Button guid="guidFormatSqlCommandPackageCmdSet" id="FormatSqlCommandId" priority="0x0100" type="Button">
+        <Parent guid="guidFormatSqlCommandPackageCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>Auswahl formatieren</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidFormatSqlCommandPackageCmdSet" id="FormatWholeDocumentCommandId" priority="0x0101" type="Button">
+        <Parent guid="guidFormatSqlCommandPackageCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic2" />
+        <Strings>
+          <ButtonText>Ganzes Dokument formatieren</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidFormatSqlCommandPackageCmdSet" id="FormattingSettingsCommandId" priority="0x0102" type="Button">
+        <Parent guid="guidFormatSqlCommandPackageCmdSet" id="MyMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic3" />
+        <Strings>
+          <ButtonText>Formatierungseinstellungen…</ButtonText>
+        </Strings>
+      </Button>
+    </Buttons>
+
+    <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
+    <Bitmaps>
+      <!--  The bitmap id is defined in a way that is a little bit different from the others:
+            the declaration starts with a guid for the bitmap strip, then there is the resource id of the
+            bitmap strip containing the bitmaps and then there are the numeric ids of the elements used
+            inside a button definition. An important aspect of this declaration is that the element id
+            must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
+      <Bitmap guid="guidImages" href="Resources\FormatSqlCommand.png" usedList="bmpPic1,bmpPic2,bmpPic3"/>
+    </Bitmaps>
+  </Commands>
+
+  <!-- Die 3 Formatier-Buttons erscheinen zusaetzlich zur Menue-Placement in der Toolbar.
+       (Ein Button kann nur EIN Parent im <Parent>-Element haben; weitere Positionen
+       werden ueber <CommandPlacement> gemerged.) -->
+  <CommandPlacements>
+    <CommandPlacement guid="guidFormatSqlCommandPackageCmdSet" id="FormatSqlCommandId" priority="0x0100">
+      <Parent guid="guidFormatSqlCommandPackageCmdSet" id="FormatToolbarGroup"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidFormatSqlCommandPackageCmdSet" id="FormatWholeDocumentCommandId" priority="0x0101">
+      <Parent guid="guidFormatSqlCommandPackageCmdSet" id="FormatToolbarGroup"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidFormatSqlCommandPackageCmdSet" id="FormattingSettingsCommandId" priority="0x0102">
+      <Parent guid="guidFormatSqlCommandPackageCmdSet" id="FormatToolbarGroup"/>
+    </CommandPlacement>
+  </CommandPlacements>
+
+  <!-- Tastenkombinationen werden NICHT hier im vsct deklariert: SSMS 22 mergt Extension-
+       KeyBindings nur in das VS-"Default"-Schema, nicht in das aktive Schema ("(Standard)").
+       Die Shortcuts (Strg+Alt+F / Strg+Alt+D / Strg+Alt+K) setzt das Package beim Laden
+       programmatisch via DTE (siehe FormatSqlCommand.EnsureKeyBindings). -->
+
+  <Symbols>
+    <!-- This is the package guid. -->
+    <GuidSymbol name="guidFormatSqlCommandPackage" value="{91b8cc77-c7b1-4ebf-9067-90d1f1c2f85d}" />
+
+    <!-- This is the guid used to group the menu commands together -->
+    <GuidSymbol name="guidFormatSqlCommandPackageCmdSet" value="{3f53685b-f1e9-45b3-bc46-8bb825ab60a2}">
+      <IDSymbol name="FormatSqlMenu" value="0x1030" />
+      <IDSymbol name="MyMenuGroup" value="0x1020" />
+      <IDSymbol name="FormatMenuHostGroup" value="0x1023" />
+      <IDSymbol name="FormatToolbarMenu" value="0x1040" />
+      <IDSymbol name="FormatToolbarGroup" value="0x1024" />
+      <IDSymbol name="FormatSqlCommandId" value="0x0100" />
+      <IDSymbol name="FormatWholeDocumentCommandId" value="0x0101" />
+      <IDSymbol name="FormattingSettingsCommandId" value="0x0102" />
+    </GuidSymbol>
+
+    <GuidSymbol name="guidImages" value="{52baaad8-2d64-4ce1-9c14-bac7a72f0fbd}" >
+      <IDSymbol name="bmpPic1" value="1" />
+      <IDSymbol name="bmpPic2" value="2" />
+      <IDSymbol name="bmpPic3" value="3" />
+    </GuidSymbol>
+
+    <!-- Alias fuer den Shell-Well der oberen Toolbar-Zeile (guidSHLMainMenu). Der Name
+         IDM_VS_TOOL_PROGWIN fehlt im SSMS-22-Header, der GUID-Wert ist derselbe wie
+         guidSHLMainMenu, daher loest das Parent korrekt auf. -->
+    <GuidSymbol name="guidSHLMainMenuToolbarWell" value="{d309f791-903f-11d0-9efc-00a0c911004f}">
+      <IDSymbol name="IDM_VS_TOOL_PROGWIN" value="0x1025"/>
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>
