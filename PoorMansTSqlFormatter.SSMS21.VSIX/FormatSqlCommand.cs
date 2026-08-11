@@ -40,7 +40,7 @@ namespace PoorMansTSqlFormatter.SSMS21.VSIX
 
             AddCommand(commandService, FormatSelectionCommandId, this.ExecuteFormatSelection, this.QueryStatusWritableDocument);
             AddCommand(commandService, FormatWholeDocumentCommandId, this.ExecuteFormatWholeDocument, this.QueryStatusWritableDocument);
-            AddCommand(commandService, FormattingSettingsCommandId, this.ExecuteSettings, null);
+            AddCommand(commandService, FormattingSettingsCommandId, this.ExecuteSettings, this.QueryStatusLocalizeOnly);
         }
 
         /// <summary>
@@ -56,6 +56,7 @@ namespace PoorMansTSqlFormatter.SSMS21.VSIX
             var command = new FormatSqlCommand(package, commandService);
             command.EnsureKeyBindings();
             command.ShowToolbar();
+            command.ApplyLocalizedCaptions();
         }
 
         /// <summary>
@@ -157,14 +158,111 @@ namespace PoorMansTSqlFormatter.SSMS21.VSIX
 
         /// <summary>
         /// Aktiviert ein Kommando nur, wenn ein beschreibbares Dokument aktiv ist (z.B. SQL-Editor).
+        /// Beim Status-Abfragen werden zugleich die lokalen Captions angewandt (deutsches SSMS),
+        /// damit auch das Untermenue korrekt beschriftet ist, wenn es angezeigt wird.
         /// </summary>
         private void QueryStatusWritableDocument(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+            ApplyLocalizedCaptions();
             if (sender is OleMenuCommand command)
             {
                 var dte = (DTE2)Package.GetGlobalService(typeof(DTE));
                 command.Enabled = dte?.ActiveDocument != null && !dte.ActiveDocument.ReadOnly;
+            }
+        }
+
+        /// <summary>
+        /// Nur-Lokalisierungs-QueryStatus fuer den Einstellungs-Button (immer aktiv).
+        /// </summary>
+        private void QueryStatusLocalizeOnly(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            ApplyLocalizedCaptions();
+        }
+
+        /// <summary>
+        /// Beschriftet die Kommando-Buttons in Toolbar und Menue zur Laufzeit um, wenn das
+        /// SSMS deutsch ist (die .vsct-Defaults sind englisch). Fuer jeden CommandBarButton
+        /// wird die englische Caption auf die deutsche gemappt; Popups (Untermenues) werden
+        /// rekursiv mitlaufen. CommandBars wird wie in <see cref="ShowToolbar"/> per
+        /// Late-Binding angesprochen (leere Facade-Assembly in SSMS 22). Idempotent: Nach dem
+        /// ersten Umbeschriften sind die Captions deutsch und kein erneuter Pass aendert etwas.
+        /// </summary>
+        private void ApplyLocalizedCaptions()
+        {
+            if (!Localizer.IsGerman) return; // englische Defaults sind dann korrekt
+            ThreadHelper.ThrowIfNotOnUIThread();
+            try
+            {
+                var dte = (DTE2)Package.GetGlobalService(typeof(DTE));
+                if (dte == null) return;
+                object commandBars = dte.CommandBars;
+                if (commandBars == null) return;
+
+                int barCount = (int)commandBars.GetType().InvokeMember(
+                    "Count", System.Reflection.BindingFlags.GetProperty, null, commandBars, null);
+                for (int i = 1; i <= barCount; i++)
+                {
+                    object bar = commandBars.GetType().InvokeMember(
+                        "Item", System.Reflection.BindingFlags.GetProperty, null, commandBars,
+                        new object[] { i });
+                    if (bar != null) RelabelBar(bar);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log("ApplyLocalizedCaptions Fehler: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Laeuft die Controls einer CommandBar durch und relabelt Buttons/Popups.
+        /// </summary>
+        private static void RelabelBar(object bar)
+        {
+            if (bar == null) return;
+            object controls = bar.GetType().InvokeMember(
+                "Controls", System.Reflection.BindingFlags.GetProperty, null, bar, null);
+            if (controls == null) return;
+            int ctlCount = (int)controls.GetType().InvokeMember(
+                "Count", System.Reflection.BindingFlags.GetProperty, null, controls, null);
+            for (int j = 1; j <= ctlCount; j++)
+            {
+                object ctl = controls.GetType().InvokeMember(
+                    "Item", System.Reflection.BindingFlags.GetProperty, null, controls,
+                    new object[] { j });
+                if (ctl != null) RelabelControl(ctl);
+            }
+        }
+
+        /// <summary>
+        /// Map Caption eines CommandBarButton auf die deutsche Bezeichnung; bei einem
+        /// Popup (Untermenue) rekursiv weitergehen.
+        /// </summary>
+        private static void RelabelControl(object ctl)
+        {
+            try
+            {
+                string caption = (string)ctl.GetType().InvokeMember(
+                    "Caption", System.Reflection.BindingFlags.GetProperty, null, ctl, null);
+                if (caption != null &&
+                    Localizer.GermanCommandCaptions.TryGetValue(caption, out string german))
+                {
+                    ctl.GetType().InvokeMember(
+                        "Caption", System.Reflection.BindingFlags.SetProperty, null, ctl,
+                        new object[] { german });
+                }
+
+                // Bei Popups (z.B. das Untermenue unter "Tools") in die verschachtelte
+                // CommandBar absteigen und deren Buttons ebenfalls relabeln.
+                object subBar = ctl.GetType().InvokeMember(
+                    "CommandBar", System.Reflection.BindingFlags.GetProperty, null, ctl, null);
+                if (subBar != null) RelabelBar(subBar);
+            }
+            catch
+            {
+                // Kein CommandBarButton/Popup (z.B. Separator, ComboBox) -> ueberspringen.
             }
         }
 
@@ -184,9 +282,7 @@ namespace PoorMansTSqlFormatter.SSMS21.VSIX
             }
             else
             {
-                MessageBox.Show(
-                    "Es ist keine Textauswahl markiert.\r\n\r\n" +
-                    "Für das komplette Skript: Menüpunkt „Ganzes Dokument formatieren“.",
+                MessageBox.Show(Localizer.NoSelectionMessage,
                     "Poor Man's T-SQL Formatter", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
@@ -287,7 +383,7 @@ namespace PoorMansTSqlFormatter.SSMS21.VSIX
             {
                 sw.Stop();
                 Log(string.Format("Formatter-Ausnahme nach {0} ms: {1}", sw.ElapsedMilliseconds, ex.Message));
-                MessageBox.Show("Formatieren fehlgeschlagen: " + ex.Message,
+                MessageBox.Show(Localizer.FormatFailedPrefix + ex.Message,
                     "Poor Man's T-SQL Formatter", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -298,9 +394,7 @@ namespace PoorMansTSqlFormatter.SSMS21.VSIX
             if (errorsFound)
             {
                 DialogResult answer = MessageBox.Show(
-                    "Die Auswahl konnte nicht vollständig geparst werden.\r\n\r\n" +
-                    "Tipp: Die vollständige Prozedur markieren (Strg+A oder von ALTER PROCEDURE bis END).\r\n\r\n" +
-                    "Bei „Ja“ kann das Ergebnis unbrauchbar werden (Treppen-Einrückung) und ersetzt dein SQL.",
+                    Localizer.ParseWarningMessage,
                     "Poor Man's T-SQL Formatter", MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
                     MessageBoxDefaultButton.Button2);
                 if (answer != DialogResult.Yes)

@@ -13,6 +13,7 @@ It reformats T-SQL code cleanly and **preserves comments** (`--` and `/* */`).
 - Custom toolbar icons
 - Keyboard shortcuts
 - Comment-preserving, configurable formatting (indentation, keyword casing, etc.)
+- **Localized UI** — German texts on German systems (`de-DE`, `de-AT`, `de-CH`, …), English everywhere else (toolbar/menu captions, message boxes, settings dialog)
 - Per-user install — no admin rights required
 
 ## System requirements
@@ -46,13 +47,22 @@ The toolbar "Poor Man's T-SQL Formatter" appears docked below the menu bar. It c
 
 ## Build from source
 
-Required: Visual Studio 2022 with the **Visual Studio extension development** workload (the project uses `Microsoft.VisualStudio.SDK` and `Microsoft.VSSDK.BuildTools` via NuGet).
+Required: **Visual Studio 2026** (v18.0 — the same shell SSMS 22 is built on) with the **Visual Studio extension development** workload. The project uses `Microsoft.VisualStudio.SDK` and `Microsoft.VSSDK.BuildTools` via NuGet.
 
-1. Open `PoorMansTSqlFormatter-SSMS22.sln`.
-2. Build the **Release** configuration.
-3. The resulting `PoorMansTSqlFormatter.SSMS21.VSIX.vsix` is in `PoorMansTSqlFormatter.SSMS21.VSIX\bin\Release\`.
+Command line:
 
-> **Note:** If you build more than once with a new version number, delete the stale `obj\Release\extension.vsixmanifest` before rebuilding — otherwise the old version number lands in the VSIX and the installer refuses the update.
+```
+msbuild PoorMansTSqlFormatter.SSMS21.VSIX\PoorMansTSqlFormatter.SSMS21.VSIX.csproj /t:Restore /p:Configuration=Release /p:VisualStudioVersion=18.0
+msbuild PoorMansTSqlFormatter.SSMS21.VSIX\PoorMansTSqlFormatter.SSMS21.VSIX.csproj /t:Build   /p:Configuration=Release /p:VisualStudioVersion=18.0
+```
+
+(`VisualStudioVersion=18.0` is required so the VSSDK BuildTools resolve the VS 18 shell.)
+
+The resulting `PoorMansTSqlFormatter.SSMS21.VSIX.vsix` is in `PoorMansTSqlFormatter.SSMS21.VSIX\bin\Release\`.
+
+> **Build gotchas:**
+> - **Restore and Build separately.** The combined `/t:Restore;Build` target list puts MSBuild into restore mode, which skips the NuGet `VSToolsPath` property — the build then falls back to the VS-installed VSSDK targets and `CreatePkgDef` fails with a `Microsoft.VisualStudio.Shell.Framework 18.0` resolution error. Run the two commands above in sequence.
+> - **Stale manifest.** When bumping the version number, delete `obj\Release\extension.vsixmanifest`, `bin\Release\extension.vsixmanifest` and the old `.vsix` before rebuilding — otherwise the old version number lands in the VSIX and the installer refuses the update.
 
 ## Uninstall
 

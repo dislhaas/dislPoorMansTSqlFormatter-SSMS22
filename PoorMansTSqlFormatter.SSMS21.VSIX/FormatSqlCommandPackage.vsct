@@ -91,21 +91,21 @@
         <Parent guid="guidFormatSqlCommandPackageCmdSet" id="MyMenuGroup" />
         <Icon guid="guidImages" id="bmpPic1" />
         <Strings>
-          <ButtonText>Auswahl formatieren</ButtonText>
+          <ButtonText>Format Selection</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidFormatSqlCommandPackageCmdSet" id="FormatWholeDocumentCommandId" priority="0x0101" type="Button">
         <Parent guid="guidFormatSqlCommandPackageCmdSet" id="MyMenuGroup" />
         <Icon guid="guidImages" id="bmpPic2" />
         <Strings>
-          <ButtonText>Ganzes Dokument formatieren</ButtonText>
+          <ButtonText>Format Whole Document</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidFormatSqlCommandPackageCmdSet" id="FormattingSettingsCommandId" priority="0x0102" type="Button">
         <Parent guid="guidFormatSqlCommandPackageCmdSet" id="MyMenuGroup" />
         <Icon guid="guidImages" id="bmpPic3" />
         <Strings>
-          <ButtonText>Formatierungseinstellungen…</ButtonText>
+          <ButtonText>Formatting Settings…</ButtonText>
         </Strings>
       </Button>
     </Buttons>

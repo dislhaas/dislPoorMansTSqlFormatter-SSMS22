@@ -56,6 +56,7 @@
     <Compile Include="FormatSqlCommandPackage.cs" />
     <Compile Include="FormattingSettings.cs" />
     <Compile Include="FormattingSettingsForm.cs" />
+    <Compile Include="Localizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
