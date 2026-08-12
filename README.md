@@ -23,6 +23,8 @@ It reformats T-SQL code cleanly and **preserves comments** (`--` and `/* */`).
 
 ## Installation
 
+Download the latest `.vsix` from the [Releases](https://github.com/dislhaas/dislPoorMansTSqlFormatter-SSMS22/releases) page.
+
 1. Close SSMS.
 2. Double-click the `.vsix` file, then click **Install**.
 3. Start SSMS.
